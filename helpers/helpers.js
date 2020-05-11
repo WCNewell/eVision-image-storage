@@ -1,6 +1,6 @@
 const util = require('util')
-const gc = require('./config')
-const bucket = gc.bucket('evision_bucket_1')
+const gc = require('./config/')
+const bucket = gc.bucket('all-mighti') // should be your bucket name
 
 /**
  *
@@ -12,16 +12,20 @@ const bucket = gc.bucket('evision_bucket_1')
  */
 
 export const uploadImage = (file) => new Promise((resolve, reject) => {
-    const { originalname, bugger } = file
-    
-    const blob = bucket.file(originalname.replace(/ /g, "_"))
-    const blobStream = blob.createWriteStream({
-        resumable: false
-    })
-    blobStream.on('finish', () => {
-        const publicUrl = format(
-            `https://storage.googleapis.com/${bucket.name}/${blob.name}`
-        )
-        resolve(publicUrl)
-    })
+  const { originalname, buffer } = file
+
+  const blob = bucket.file(originalname.replace(/ /g, "_"))
+  const blobStream = blob.createWriteStream({
+    resumable: false
+  })
+  blobStream.on('finish', () => {
+    const publicUrl = format(
+      `https://storage.googleapis.com/${bucket.name}/${blob.name}`
+    )
+    resolve(publicUrl)
+  })
+  .on('error', () => {
+    reject(`Unable to upload image, something went wrong`)
+  })
+  .end(buffer)
 })
